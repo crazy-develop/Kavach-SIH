@@ -261,8 +261,8 @@ function Dashboard({ token, onLogout, onBack }) {
   const encRate = Math.floor(Math.random() * 10 + 90);
 
   useEffect(() => {
-    if (vaultUnlocked) loadDocs().catch(() => {});
-  }, [vaultUnlocked, token]);
+    loadDocs().catch(() => {});
+  }, [token]);
 
   return (
     <div className="cmd-center" style={{ width: '100vw', height: '100vh', margin: 0, borderRadius: 0, position: 'relative', overflowX: 'hidden', overflowY: 'auto' }}>
@@ -271,17 +271,24 @@ function Dashboard({ token, onLogout, onBack }) {
       <div className="cyber-orb orb2"></div>
       
       {/* HEADER */}
-      <div className="cmd-header">
-        <h1>KAVACH GLOBAL COMMAND CENTER</h1>
-        <div className="status-indicator">
-          <div className="dot"></div>
-          NODE: ADMIN_AUTH_ACTIVE
+      <div className="cmd-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px 30px', borderBottom: '1px solid rgba(0, 255, 204, 0.2)', background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(10px)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+          <h1 style={{ margin: 0, fontSize: '1.2rem', color: '#00ffcc', letterSpacing: '2px' }}>KAVACH ADMIN</h1>
+          <div className="status-indicator" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#10b981' }}>
+            <div className="dot" style={{ width: '8px', height: '8px', background: '#10b981', borderRadius: '50%', boxShadow: '0 0 8px #10b981' }}></div>
+            NODE: ACTIVE
+          </div>
         </div>
-        {onBack && (
-          <button onClick={onBack} style={{ background: 'transparent', color: '#38bdf8', border: '1px solid #38bdf8', padding: '5px 15px', cursor: 'pointer', borderRadius: '4px' }}>
-            EXIT SYSTEM
+        <div style={{ display: 'flex', gap: '15px' }}>
+          {onBack && (
+            <button onClick={onBack} style={{ background: 'transparent', color: '#00ffcc', border: '1px solid #00ffcc', padding: '8px 20px', cursor: 'pointer', borderRadius: '4px', textTransform: 'uppercase', fontWeight: 'bold' }}>
+              ⌂ Home Page
+            </button>
+          )}
+          <button onClick={onLogout} style={{ background: 'rgba(255,0,60,0.1)', color: '#ff003c', border: '1px solid #ff003c', padding: '8px 20px', cursor: 'pointer', borderRadius: '4px', textTransform: 'uppercase', fontWeight: 'bold' }}>
+            Logout
           </button>
-        )}
+        </div>
       </div>
 
       {/* LEFT SIDEBAR (RADAR & METRICS) */}
@@ -363,7 +370,6 @@ function Dashboard({ token, onLogout, onBack }) {
             <button onClick={doReconstruct} disabled={busy || !active || active.shareCount < active.threshold} className="primary">
               Reconstruct Key ({active ? active.shareCount : 0}/{active ? active.threshold : 3})
             </button>
-            <button onClick={onLogout} className="ghost">Logout</button>
           </div>
           {notice && <p className="note">{notice}</p>}
           {masterKey && (
@@ -381,36 +387,49 @@ function Dashboard({ token, onLogout, onBack }) {
               {Array.from({ length: active.total }, (_, i) => (
                 <span key={i} className={i < active.shareCount ? 'filled' : 'empty'} title={`Share ${i + 1}`} />
               ))}
-              <p>{active.shareCount} of {active.total} shares • Need {active.threshold} • {active.shareCount >= active.threshold ? 'VAULT UNLOCKED' : 'VAULT LOCKED'}</p>
+              <p>{active.shareCount} of {active.total} shares • Need {active.threshold} • {active.shareCount >= active.threshold ? 'VAULT UNLOCKED' : 'VAULT SECURED'}</p>
             </div>
           ) : (
             <p className="note">No active session.</p>
           )}
 
-          {vaultUnlocked ? (
-            <div style={{ marginTop: '20px' }}>
-              <p className="note">Vault is <span className="success">UNLOCKED</span> (AES-256-GCM).</p>
-              <form onSubmit={doUpload} className="row" style={{ marginTop: '15px' }}>
-                <input type="file" onChange={(e) => setSelectedFile(e.target.files[0] || null)} style={{ padding: '8px', fontSize: '12px' }} />
-                <button type="submit" disabled={vaultBusy || !selectedFile} className="primary" style={{ padding: '10px 15px', fontSize: '12px' }}>
-                  {vaultBusy ? 'Encrypting...' : 'Upload & Encrypt'}
-                </button>
-              </form>
-              <ul className="events" style={{ marginTop: '15px' }}>
-                {docs.map((doc) => (
-                  <li key={doc._id}>
-                    <span className="pill blue">SECURE</span>
-                    <span>{doc.name}</span>
+          <div style={{ marginTop: '20px' }}>
+            <p className="note">Vault Access: <span className="success">ADMIN OVERRIDE ENABLED</span> (AES-256-GCM).</p>
+            <form onSubmit={doUpload} className="row" style={{ marginTop: '15px' }}>
+              <input type="file" onChange={(e) => setSelectedFile(e.target.files[0] || null)} style={{ padding: '8px', fontSize: '12px' }} />
+              <button type="submit" disabled={vaultBusy || !selectedFile} className="primary" style={{ padding: '10px 15px', fontSize: '12px' }}>
+                {vaultBusy ? 'Encrypting...' : 'Upload & Encrypt'}
+              </button>
+            </form>
+            <ul className="events" style={{ marginTop: '15px' }}>
+              {docs.length === 0 && <p className="note">No documents in vault.</p>}
+              {docs.map((doc) => (
+                <li key={doc._id}>
+                  <span className="pill blue">SECURE</span>
+                  <span>{doc.name}</span>
+                  <div style={{ display: 'flex', gap: '5px' }}>
                     <button onClick={() => doDecrypt(doc)} disabled={vaultBusy} className="ghost small-btn">
                       Decrypt
                     </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ) : (
-            <p className="note" style={{ marginTop: '20px' }}>Waiting for {active ? active.threshold : 3} custodians to reconstruct the master key...</p>
-          )}
+                    <button onClick={async () => {
+                      if (!confirm('Delete this document forever?')) return;
+                      setVaultBusy(true);
+                      try {
+                        await api('DELETE', `/api/admin/document/${doc._id}`, null, token);
+                        await loadDocs();
+                      } catch (e) {
+                        alert('Error: ' + e.message);
+                      } finally {
+                        setVaultBusy(false);
+                      }
+                    }} disabled={vaultBusy} className="ghost small-btn" style={{ borderColor: '#f43f5e', color: '#f43f5e' }}>
+                      Delete
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </div>
 
@@ -462,15 +481,32 @@ function Dashboard({ token, onLogout, onBack }) {
 
       {/* BOTTOM AREA (CREDENTIALS) */}
       {credentials.length > 0 && (
-        <div className="cmd-creds-grid">
-           {credentials.map((c) => (
-             <div key={c.email} className="cmd-panel" style={{ textAlign: 'center' }}>
-               <p style={{ margin: '0 0 10px', color: '#00ffcc' }}><b>{c.name}</b></p>
-               <p className="muted" style={{ fontSize: '11px', marginBottom: '10px' }}>{c.role}</p>
-               <img src={c.qrDataUrl} alt="TOTP" style={{ width: '100px', borderRadius: '5px', marginBottom: '10px' }} />
-               <p style={{ fontSize: '12px' }}>Pass: <code>{c.tempPassword}</code></p>
-             </div>
-           ))}
+        <div className="cmd-panel" style={{ marginTop: '20px', border: '2px solid #00ffcc', boxShadow: '0 0 20px rgba(0,255,204,0.3)', width: '100%', maxWidth: '1000px', margin: '20px auto' }}>
+          <h3 style={{ color: '#00ffcc', textAlign: 'center', fontSize: '1.5rem', marginBottom: '10px' }}>NEW CUSTODIAN CREDENTIALS GENERATED</h3>
+          <p className="note" style={{ textAlign: 'center', marginBottom: '20px' }}>Save these credentials now. They will not be shown again.</p>
+          <div className="cmd-creds-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '20px', maxWidth: '800px', margin: '0 auto' }}>
+             {credentials.map((c) => (
+               <div key={c.email} style={{ background: 'rgba(0,0,0,0.4)', padding: '15px', borderRadius: '8px', border: '1px solid rgba(0,255,204,0.2)', textAlign: 'left' }}>
+                 <p style={{ margin: '0 0 10px 0', color: '#fff', fontWeight: 'bold' }}>{c.name} <span style={{ color: '#888', fontWeight: 'normal' }}>({c.role})</span></p>
+                 <div style={{ marginBottom: '10px' }}>
+                   <label style={{ display: 'block', fontSize: '10px', color: '#00ffcc' }}>OPERATIVE ID (EMAIL)</label>
+                   <code style={{ color: '#fff', fontSize: '12px' }}>{c.email}</code>
+                 </div>
+                 <div style={{ marginBottom: '10px' }}>
+                   <label style={{ display: 'block', fontSize: '10px', color: '#ff003c' }}>PASSWORD / SECURITY KEY</label>
+                   <code style={{ color: '#ff003c', fontSize: '14px', fontWeight: 'bold' }}>{c.tempPassword}</code>
+                 </div>
+                 <div style={{ marginBottom: '10px', textAlign: 'center' }}>
+                   <label style={{ display: 'block', fontSize: '10px', color: '#00ffcc', textAlign: 'left' }}>TOTP QR (GOOGLE AUTH)</label>
+                   <img src={c.qrDataUrl} alt="TOTP QR" style={{ width: '100%', maxWidth: '120px', background: '#fff', padding: '5px', borderRadius: '4px', marginTop: '5px' }} />
+                 </div>
+                 <div style={{ marginBottom: '5px' }}>
+                   <label style={{ display: 'block', fontSize: '10px', color: '#00ffcc' }}>TOTP SECRET (MANUAL ENTRY)</label>
+                   <code style={{ color: '#fff', fontSize: '11px', wordBreak: 'break-all' }}>{c.totpSecret}</code>
+                 </div>
+               </div>
+             ))}
+          </div>
         </div>
       )}
 
