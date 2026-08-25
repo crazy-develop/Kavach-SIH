@@ -31,7 +31,7 @@ export default function AuthModal({ onClose, initialRoute = '/custodian' }) {
           </nav>
           
           <div className="auth-body">
-            {route === '/admin' ? <AdminDashboard /> : <CustodianFlow />}
+            {route === '/admin' ? <AdminDashboard onBack={onClose} /> : <CustodianFlow />}
           </div>
         </div>
       </div>

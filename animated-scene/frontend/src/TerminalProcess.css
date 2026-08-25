@@ -47,20 +47,7 @@
   opacity: 1;
 }
 
-.tp-corner-logo {
-  position: absolute;
-  bottom: 40px;
-  right: 40px;
-  height: 70px;
-  z-index: 20;
-  opacity: 0;
-  transition: opacity 1.5s ease;
-  pointer-events: none;
-}
 
-.tp-corner-logo.visible {
-  opacity: 1;
-}
 
 .terminal-process-container {
   width: 100%;

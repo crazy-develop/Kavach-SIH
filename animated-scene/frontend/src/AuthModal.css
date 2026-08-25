@@ -57,6 +57,9 @@
   max-width: 1000px;
   margin: 0 auto;
 }
+.auth-modal-content.full-page-mode .auth-app {
+  max-width: 100%;
+}
 
 .auth-topnav {
   display: flex;
@@ -365,4 +368,5 @@
   height: 100vh;
   border-radius: 0;
   border: none;
+  padding: 10px 20px;
 }

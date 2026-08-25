@@ -71,11 +71,12 @@ export default function TerminalProcess() {
   const overlayRef = useRef(null);
   const logoRef = useRef(null);
   const imagesRef = useRef([]);
+  const logoImgRef = useRef(null);
   const targetFrameRef = useRef(0);
   const currentFrameRef = useRef(0);
   const lastDrawnFrameRef = useRef(-1);
 
-  const TOTAL_FRAMES = 211;
+  const TOTAL_FRAMES = 70;
 
   useEffect(() => {
     // Preload images
@@ -83,10 +84,14 @@ export default function TerminalProcess() {
     for (let i = 1; i <= TOTAL_FRAMES; i++) {
       const img = new Image();
       const frameNum = i.toString().padStart(3, '0');
-      img.src = `/middle_frames/frame_${frameNum}.jpg`;
+      img.src = `/middle_frames/frame_${frameNum}.png`;
       images.push(img);
     }
     imagesRef.current = images;
+    
+    const logoImg = new Image();
+    logoImg.src = "/abhedyah-logo.png";
+    logoImgRef.current = logoImg;
   }, []);
 
   useEffect(() => {
@@ -126,8 +131,8 @@ export default function TerminalProcess() {
       targetFrameRef.current = Math.min(TOTAL_FRAMES - 1, fraction * (TOTAL_FRAMES - 1));
 
       // Update UI visibility and active step based on scroll
-      // Dragon fire starts around frame 126-137 (fraction ~0.60)
-      const FIRE_THRESHOLD = 0.60;
+      // UI appears at the very end of the scroll sequence as requested
+      const FIRE_THRESHOLD = 0.80;
       
       if (rect.top <= 0 && rect.bottom >= window.innerHeight) {
         if (fraction > FIRE_THRESHOLD) {
@@ -174,12 +179,25 @@ export default function TerminalProcess() {
         
         if (img && img.complete && img.naturalWidth > 0) {
            const baseScale = Math.max(canvas.width / img.width, canvas.height / img.height);
-           const zoomScale = baseScale * 1.05; // slight zoom to prevent edge bleeding
+           const zoomScale = baseScale * 1.05; 
            const x = (canvas.width / 2) - (img.width / 2) * zoomScale;
            const y = (canvas.height / 2) - (img.height / 2) * zoomScale;
            
            ctx.clearRect(0, 0, canvas.width, canvas.height);
            ctx.drawImage(img, x, y, img.width * zoomScale, img.height * zoomScale);
+           
+           // Draw the logo directly over the bottom-right corner of the video frame to perfectly hide the watermark
+           if (logoImgRef.current && logoImgRef.current.complete && logoImgRef.current.naturalWidth > 0) {
+               // The original watermark is in the bottom right of the 1920x1080 frame
+               // Let's place a 100x100 logo over it, relative to the scaled image dimensions
+               const logoSize = 120 * zoomScale;
+               // Position it at the bottom right of the drawn image bounds, with a small padding
+               const logoX = x + (img.width * zoomScale) - logoSize - (20 * zoomScale);
+               const logoY = y + (img.height * zoomScale) - logoSize - (20 * zoomScale);
+               
+               ctx.drawImage(logoImgRef.current, logoX, logoY, logoSize, logoSize);
+           }
+           
            lastDrawnFrameRef.current = frameIndex;
         }
     }
@@ -306,7 +324,6 @@ export default function TerminalProcess() {
       <div className="tp-sticky-scene">
         <canvas ref={canvasRef} className="tp-video-canvas"></canvas>
         <div className="tp-overlay" ref={overlayRef}></div>
-        <img src="/abhedyah-logo.png" alt="Logo" className="tp-corner-logo" ref={logoRef} />
         
         <div className="terminal-process-container" ref={uiContainerRef}>
           <div className="tp-header">

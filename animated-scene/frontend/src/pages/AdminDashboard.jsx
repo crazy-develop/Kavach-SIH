@@ -265,7 +265,7 @@ function Dashboard({ token, onLogout, onBack }) {
   }, [token]);
 
   return (
-    <div className="cmd-center" style={{ width: '100vw', height: '100vh', margin: 0, borderRadius: 0, position: 'relative', overflowX: 'hidden', overflowY: 'auto' }}>
+    <div className="cmd-center" style={{ width: '100%', height: '100%', margin: 0, borderRadius: 0, position: 'relative', overflowX: 'hidden', overflowY: 'auto' }}>
       
       <div className="cyber-orb orb1"></div>
       <div className="cyber-orb orb2"></div>
