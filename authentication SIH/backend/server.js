@@ -16,7 +16,8 @@ async function start() {
     process.exit(1);
   }
 
-  ensureDns();
+  // Commented out to prevent DNS timeouts under blocked environments
+  // ensureDns();
   getFirebaseAdminApp();
   await mongoose.connect(uri, { dbName: process.env.DB_NAME || 'exam_auth' });
   console.log('MongoDB connected');

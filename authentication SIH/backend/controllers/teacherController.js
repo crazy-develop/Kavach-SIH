@@ -11,6 +11,7 @@ async function verifyToken(req, res) {
 
   try {
     const decodedToken = await getAuth().verifyIdToken(idToken);
+    console.log("Firebase verified email:", decodedToken.email, "UID:", decodedToken.uid, "claims:", decodedToken);
     
     // Authorization: Check Firebase custom claims or MongoDB
     let isTeacher = decodedToken.role === 'teacher';
@@ -31,11 +32,13 @@ async function verifyToken(req, res) {
     }
 
     if (!isTeacher) {
+      console.log("Teacher authorization failed for:", decodedToken.email);
       return res.status(403).json({ error: 'Forbidden: You do not have the teacher role' });
     }
 
     return res.json({ message: 'Authorized', email: decodedToken.email, name: teacherRecord.name });
   } catch (err) {
+    console.error("Token verification failed error:", err.message);
     return res.status(401).json({ error: 'Invalid or expired Firebase ID token: ' + err.message });
   }
 }
