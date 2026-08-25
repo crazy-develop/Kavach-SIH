@@ -1,14 +1,16 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import './AuthModal.css';
 import CustodianFlow from './pages/CustodianFlow.jsx';
 import AdminDashboard from './pages/AdminDashboard.jsx';
+import TeacherDashboard from './pages/TeacherDashboard.jsx';
 
 export default function AuthModal({ onClose, initialRoute = '/custodian' }) {
   const [route, setRoute] = useState(initialRoute);
+  const isFullPage = route === '/admin' || route === '/teacher';
 
   return (
     <div className="auth-modal-overlay">
-      <div className={`auth-modal-content ${route === '/admin' ? 'full-page-mode' : ''}`}>
+      <div className={`auth-modal-content ${isFullPage ? 'full-page-mode' : ''}`}>
         <button className="auth-close-btn" onClick={onClose}>×</button>
         
         <div className="auth-app">
@@ -22,6 +24,12 @@ export default function AuthModal({ onClose, initialRoute = '/custodian' }) {
                 Custodian Login
               </button>
               <button 
+                className={route === '/teacher' ? 'active' : ''} 
+                onClick={() => setRoute('/teacher')}
+              >
+                Teacher Panel
+              </button>
+              <button 
                 className={route === '/admin' ? 'active' : ''} 
                 onClick={() => setRoute('/admin')}
               >
@@ -31,7 +39,13 @@ export default function AuthModal({ onClose, initialRoute = '/custodian' }) {
           </nav>
           
           <div className="auth-body">
-            {route === '/admin' ? <AdminDashboard /> : <CustodianFlow />}
+            {route === '/admin' ? (
+              <AdminDashboard />
+            ) : route === '/teacher' ? (
+              <TeacherDashboard />
+            ) : (
+              <CustodianFlow />
+            )}
           </div>
         </div>
       </div>

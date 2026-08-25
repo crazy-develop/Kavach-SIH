@@ -1,8 +1,10 @@
-require('dotenv').config();
+﻿require('dotenv').config();
 const mongoose = require('mongoose');
 const { createServer } = require('./app');
 const { ensureDns } = require('./utils/dns');
 const { ensureDefaultAdmin } = require('./services/adminService');
+const { ensureDefaultTeacher } = require('./services/teacherService');
+const { getFirebaseAdminApp } = require('./utils/firebaseAdmin');
 
 async function start() {
   const uri = process.env.MONGODB_URI;
@@ -15,9 +17,11 @@ async function start() {
   }
 
   ensureDns();
+  getFirebaseAdminApp();
   await mongoose.connect(uri, { dbName: process.env.DB_NAME || 'exam_auth' });
   console.log('MongoDB connected');
   await ensureDefaultAdmin();
+  await ensureDefaultTeacher();
   const { server } = createServer();
   const PORT = process.env.PORT || 5000;
   server.listen(PORT, () => {

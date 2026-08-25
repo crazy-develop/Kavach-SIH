@@ -295,6 +295,7 @@ function App() {
               <li>Architecture</li>
               <li>Security</li>
               <li onClick={() => { setAuthRoute('/custodian'); setAuthOpen(true); }}>Authenticate</li>
+              <li onClick={() => { setAuthRoute('/teacher'); setAuthOpen(true); }}>Teacher Panel</li>
               <li onClick={() => { setAuthRoute('/admin'); setAuthOpen(true); }}>Admin Panel</li>
             </ul>
           </nav>
