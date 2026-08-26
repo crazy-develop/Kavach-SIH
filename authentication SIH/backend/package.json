@@ -17,6 +17,7 @@
     "express": "^5.2.1",
     "firebase-admin": "^14.3.0",
     "jsonwebtoken": "^9.0.3",
+    "mongodb-memory-server": "^11.2.0",
     "mongoose": "^9.9.2",
     "qrcode": "^1.5.4",
     "secrets.js-grempe": "^2.0.0",

@@ -1,4 +1,4 @@
-﻿require('dotenv').config();
+require('dotenv').config();
 const mongoose = require('mongoose');
 const { createServer } = require('./app');
 const { ensureDns } = require('./utils/dns');
@@ -7,20 +7,38 @@ const { ensureDefaultTeacher } = require('./services/teacherService');
 const { getFirebaseAdminApp } = require('./utils/firebaseAdmin');
 
 async function start() {
-  const uri = process.env.MONGODB_URI;
+  let uri = process.env.MONGODB_URI;
   if (!uri) {
-    console.error('\nMONGODB_URI missing.');
-    console.error('1. Create a free cluster at https://www.mongodb.com/atlas');
-    console.error('2. Add your connection string to backend/.env as MONGODB_URI=mongodb+srv://...');
-    console.error('3. Also add JWT_SECRET (any long random string)\n');
+    console.error('\nMONGODB_URI missing. Set it in .env');
     process.exit(1);
   }
 
   // Commented out to prevent DNS timeouts under blocked environments
   // ensureDns();
   getFirebaseAdminApp();
-  await mongoose.connect(uri, { dbName: process.env.DB_NAME || 'exam_auth' });
-  console.log('MongoDB connected');
+
+  try {
+    console.log(`Attempting to connect to MongoDB at ${uri}...`);
+    // Fast timeout so it doesn't hang
+    await mongoose.connect(uri, { dbName: process.env.DB_NAME || 'exam_auth', serverSelectionTimeoutMS: 2000 });
+    console.log('MongoDB connected successfully to local/remote server.');
+  } catch (err) {
+    console.log(`Failed to connect to ${uri}: ${err.message}`);
+    console.log('Starting in-memory MongoDB fallback (version 6.0.4)...');
+    // Force version 6.0.4 to avoid EFTYPE errors on Windows with v7+ binaries
+    process.env.MONGOMS_VERSION = '6.0.4';
+    const { MongoMemoryServer } = require('mongodb-memory-server');
+    const mongod = await MongoMemoryServer.create({
+      instance: {
+        dbPath: 'E:\\SIH\\database_storage',
+        storageEngine: 'wiredTiger'
+      }
+    });
+    const fallbackUri = mongod.getUri();
+    await mongoose.connect(fallbackUri, { dbName: process.env.DB_NAME || 'exam_auth' });
+    console.log(`MongoDB connected successfully to IN-MEMORY server at ${fallbackUri}`);
+  }
+
   await ensureDefaultAdmin();
   await ensureDefaultTeacher();
   const { server } = createServer();
