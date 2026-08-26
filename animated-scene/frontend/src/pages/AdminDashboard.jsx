@@ -273,13 +273,13 @@ function Dashboard({ token, onLogout, onBack }) {
   }, [token]);
 
   return (
-    <div className="cmd-center" style={{ width: '100%', margin: 0, borderRadius: 0, position: 'relative' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', width: '100%', height: '100%', position: 'relative', overflow: 'hidden' }}>
       
       <div className="cyber-orb orb1"></div>
       <div className="cyber-orb orb2"></div>
       
       {/* HEADER */}
-      <div className="cmd-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px 30px', borderBottom: '1px solid rgba(0, 255, 204, 0.2)', background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', position: 'sticky', top: 0, zIndex: 100 }}>
+      <div className="cmd-header" style={{ flexShrink: 0, display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px 30px', borderBottom: '1px solid rgba(0, 255, 204, 0.2)', background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', zIndex: 100 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
           <h1 style={{ margin: 0, fontSize: '1.2rem', color: '#00ffcc', letterSpacing: '2px' }}>KAVACH ADMIN</h1>
           <div className="status-indicator" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#10b981' }}>
@@ -299,6 +299,7 @@ function Dashboard({ token, onLogout, onBack }) {
         </div>
       </div>
 
+      <div className="cmd-center" style={{ flexGrow: 1, margin: 0, borderRadius: 0, overflowX: 'hidden', overflowY: 'auto' }}>
       {/* LEFT SIDEBAR (RADAR & METRICS) */}
       <div className="cmd-sidebar">
         <div className="cmd-panel">
@@ -489,7 +490,7 @@ function Dashboard({ token, onLogout, onBack }) {
 
       {/* BOTTOM AREA (CREDENTIALS) */}
       {credentials.length > 0 && (
-        <div className="cmd-panel" style={{ marginTop: '20px', border: '2px solid #00ffcc', boxShadow: '0 0 20px rgba(0,255,204,0.3)', width: '100%', maxWidth: '1000px', margin: '20px auto' }}>
+        <div className="cmd-panel" style={{ gridColumn: '1 / -1', marginTop: '20px', border: '2px solid #00ffcc', boxShadow: '0 0 20px rgba(0,255,204,0.3)', width: '100%', maxWidth: '1000px', margin: '20px auto' }}>
           <h3 style={{ color: '#00ffcc', textAlign: 'center', fontSize: '1.5rem', marginBottom: '10px' }}>NEW CUSTODIAN CREDENTIALS GENERATED</h3>
           <p className="note" style={{ textAlign: 'center', marginBottom: '20px' }}>Save these credentials now. They will not be shown again.</p>
           <div className="cmd-creds-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '20px', maxWidth: '800px', margin: '0 auto' }}>
@@ -518,6 +519,7 @@ function Dashboard({ token, onLogout, onBack }) {
         </div>
       )}
 
+      </div>
     </div>
   );
 }
