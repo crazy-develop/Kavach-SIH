@@ -475,7 +475,7 @@ function Dashboard({ token, onLogout, onBack }) {
       <div className="cmd-right">
         <div className="cmd-panel">
           <h3>Live Socket.io Feed</h3>
-          <ul className="events" style={{ maxHeight: '200px' }}>
+          <ul className="events" style={{ maxHeight: '200px', overflowY: 'auto' }}>
             {events.length === 0 && <p className="note">Listening...</p>}
             {events.map((ev, i) => (
               <li key={i} style={{ borderLeft: `3px solid var(--${ev.color})` }}>
