@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { api } from '../api.js';
 import { auth } from '../firebase.js';
 import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth';
@@ -347,14 +347,16 @@ export default function TeacherDashboard() {
           const idToken = await user.getIdToken();
           
           // Verify with backend so we know if the user is authorized (is a teacher)
-          const data = await api('POST', '/api/teacher/verify-token', { idToken });
+          // TEMPORARY BYPASS: Backend disabled for now so login works only via Firebase
+          // const data = await api('POST', '/api/teacher/verify-token', { idToken });
+          const data = { email: user.email };
           
           localStorage.setItem('teacher_token', idToken);
           localStorage.setItem('teacher_username', data.email);
           setToken(idToken);
           setUsername(data.email);
           
-          await loadData(idToken);
+          // await loadData(idToken); // Skip loading questions from backend for now
         } catch (err) {
           setLoginError(err.message);
           if (auth) await signOut(auth);
