@@ -440,8 +440,37 @@ function Dashboard({ token, onLogout, onBack }) {
             </ul>
           </div>
         </div>
+        {/* CREDENTIALS (IN CENTER COLUMN) */}
+        {credentials.length > 0 && (
+          <div className="cmd-panel" style={{ marginTop: '20px', border: '2px solid #00ffcc', boxShadow: '0 0 20px rgba(0,255,204,0.3)', width: '100%' }}>
+            <h3 style={{ color: '#00ffcc', textAlign: 'center', fontSize: '1.2rem', marginBottom: '10px' }}>NEW CUSTODIAN CREDENTIALS GENERATED</h3>
+            <p className="note" style={{ textAlign: 'center', marginBottom: '20px' }}>Save these credentials now. They will not be shown again.</p>
+            <div className="cmd-creds-grid" style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '20px', width: '100%' }}>
+             {credentials.map((c) => (
+               <div key={c.email} style={{ background: 'rgba(0,0,0,0.4)', padding: '15px', borderRadius: '8px', border: '1px solid rgba(0,255,204,0.2)', textAlign: 'left' }}>
+                 <p style={{ margin: '0 0 10px 0', color: '#fff', fontWeight: 'bold' }}>{c.name} <span style={{ color: '#888', fontWeight: 'normal' }}>({c.role})</span></p>
+                 <div style={{ marginBottom: '10px' }}>
+                   <label style={{ display: 'block', fontSize: '10px', color: '#00ffcc' }}>OPERATIVE ID (EMAIL)</label>
+                   <code style={{ color: '#fff', fontSize: '12px' }}>{c.email}</code>
+                 </div>
+                 <div style={{ marginBottom: '10px' }}>
+                   <label style={{ display: 'block', fontSize: '10px', color: '#ff003c' }}>PASSWORD / SECURITY KEY</label>
+                   <code style={{ color: '#ff003c', fontSize: '14px', fontWeight: 'bold' }}>{c.tempPassword}</code>
+                 </div>
+                 <div style={{ marginBottom: '10px', textAlign: 'center' }}>
+                   <label style={{ display: 'block', fontSize: '10px', color: '#00ffcc', textAlign: 'left' }}>TOTP QR (GOOGLE AUTH)</label>
+                   <img src={c.qrDataUrl} alt="TOTP QR" style={{ width: '100%', maxWidth: '120px', background: '#fff', padding: '5px', borderRadius: '4px', marginTop: '5px' }} />
+                 </div>
+                 <div style={{ marginBottom: '5px' }}>
+                   <label style={{ display: 'block', fontSize: '10px', color: '#00ffcc' }}>TOTP SECRET (MANUAL ENTRY)</label>
+                   <code style={{ color: '#fff', fontSize: '11px', wordBreak: 'break-all' }}>{c.totpSecret}</code>
+                 </div>
+               </div>
+             ))}
+          </div>
+          </div>
+        )}
       </div>
-
       {/* RIGHT SIDEBAR (LOGS) */}
       <div className="cmd-right">
         <div className="cmd-panel">
@@ -488,36 +517,6 @@ function Dashboard({ token, onLogout, onBack }) {
         </div>
       </div>
 
-      {/* BOTTOM AREA (CREDENTIALS) */}
-      {credentials.length > 0 && (
-        <div className="cmd-panel" style={{ gridColumn: '1 / -1', marginTop: '20px', border: '2px solid #00ffcc', boxShadow: '0 0 20px rgba(0,255,204,0.3)', width: '100%', maxWidth: '1000px', margin: '20px auto' }}>
-          <h3 style={{ color: '#00ffcc', textAlign: 'center', fontSize: '1.5rem', marginBottom: '10px' }}>NEW CUSTODIAN CREDENTIALS GENERATED</h3>
-          <p className="note" style={{ textAlign: 'center', marginBottom: '20px' }}>Save these credentials now. They will not be shown again.</p>
-          <div className="cmd-creds-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '20px', maxWidth: '800px', margin: '0 auto' }}>
-             {credentials.map((c) => (
-               <div key={c.email} style={{ background: 'rgba(0,0,0,0.4)', padding: '15px', borderRadius: '8px', border: '1px solid rgba(0,255,204,0.2)', textAlign: 'left' }}>
-                 <p style={{ margin: '0 0 10px 0', color: '#fff', fontWeight: 'bold' }}>{c.name} <span style={{ color: '#888', fontWeight: 'normal' }}>({c.role})</span></p>
-                 <div style={{ marginBottom: '10px' }}>
-                   <label style={{ display: 'block', fontSize: '10px', color: '#00ffcc' }}>OPERATIVE ID (EMAIL)</label>
-                   <code style={{ color: '#fff', fontSize: '12px' }}>{c.email}</code>
-                 </div>
-                 <div style={{ marginBottom: '10px' }}>
-                   <label style={{ display: 'block', fontSize: '10px', color: '#ff003c' }}>PASSWORD / SECURITY KEY</label>
-                   <code style={{ color: '#ff003c', fontSize: '14px', fontWeight: 'bold' }}>{c.tempPassword}</code>
-                 </div>
-                 <div style={{ marginBottom: '10px', textAlign: 'center' }}>
-                   <label style={{ display: 'block', fontSize: '10px', color: '#00ffcc', textAlign: 'left' }}>TOTP QR (GOOGLE AUTH)</label>
-                   <img src={c.qrDataUrl} alt="TOTP QR" style={{ width: '100%', maxWidth: '120px', background: '#fff', padding: '5px', borderRadius: '4px', marginTop: '5px' }} />
-                 </div>
-                 <div style={{ marginBottom: '5px' }}>
-                   <label style={{ display: 'block', fontSize: '10px', color: '#00ffcc' }}>TOTP SECRET (MANUAL ENTRY)</label>
-                   <code style={{ color: '#fff', fontSize: '11px', wordBreak: 'break-all' }}>{c.totpSecret}</code>
-                 </div>
-               </div>
-             ))}
-          </div>
-        </div>
-      )}
 
       </div>
     </div>
