@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import './AuthModal.css';
 import CustodianFlow from './pages/CustodianFlow.jsx';
 import AdminDashboard from './pages/AdminDashboard.jsx';
@@ -40,7 +40,7 @@ export default function AuthModal({ onClose, initialRoute = '/custodian' }) {
           
           <div className="auth-body">
             {route === '/admin' ? (
-              <AdminDashboard />
+              <AdminDashboard onBack={onClose} />
             ) : route === '/teacher' ? (
               <TeacherDashboard />
             ) : (
