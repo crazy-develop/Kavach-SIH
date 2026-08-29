@@ -13,8 +13,11 @@ function TeacherLogin({ errorMsg, setErrorMsg }) {
     setBusy(true);
     setErrorMsg('');
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      console.log('[Diagnostic] Firebase Sign-In attempt for email:', email);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      console.log('[Diagnostic] Firebase Sign-In success. UID:', userCredential.user.uid);
     } catch (err) {
+      console.error('[Diagnostic] Firebase Sign-In failed:', err.message);
       setErrorMsg(err.message);
       setBusy(false);
     }
@@ -343,25 +346,28 @@ export default function TeacherDashboard() {
       setInitializing(true);
       if (user) {
         setFirebaseUser(user);
+        console.log('[Diagnostic] Firebase Auth State: USER LOGGED IN. UID:', user.uid);
         try {
           const idToken = await user.getIdToken();
+          console.log('[Diagnostic] ID Token obtained. Sending to backend verify-token endpoint...');
           
           // Verify with backend so we know if the user is authorized (is a teacher)
-          // TEMPORARY BYPASS: Backend disabled for now so login works only via Firebase
-          // const data = await api('POST', '/api/teacher/verify-token', { idToken });
-          const data = { email: user.email };
+          const data = await api('POST', '/api/teacher/verify-token', { idToken });
+          console.log('[Diagnostic] Backend verification success:', data);
           
           localStorage.setItem('teacher_token', idToken);
           localStorage.setItem('teacher_username', data.email);
           setToken(idToken);
           setUsername(data.email);
           
-          // await loadData(idToken); // Skip loading questions from backend for now
+          await loadData(idToken);
         } catch (err) {
+          console.error('[Diagnostic] Backend verification failed:', err.message);
           setLoginError(err.message);
           if (auth) await signOut(auth);
         }
       } else {
+        console.log('[Diagnostic] Firebase Auth State: NO USER');
         handleLogout();
       }
       setInitializing(false);
