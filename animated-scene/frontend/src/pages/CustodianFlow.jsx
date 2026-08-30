@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { api } from '../api.js';
 
-const STEPS = ['Login', '2FA Verify', 'Submit Security Key'];
+const STEPS = ['Login', '2FA Verify', 'Submit Share'];
 
 export default function CustodianFlow() {
   const [step, setStep] = useState(0);
@@ -12,25 +12,6 @@ export default function CustodianFlow() {
   const [session, setSession] = useState(null);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
-  const [documents, setDocuments] = useState([]);
-  const [downloadingId, setDownloadingId] = useState(null);
-
-  useEffect(() => {
-    if (session?.result?.keyReconstructed) {
-      loadDocuments();
-    }
-  }, [session?.result?.keyReconstructed]);
-
-  async function loadDocuments() {
-    try {
-      const data = await api('GET', '/api/share/documents', null, session.token);
-      if (data.documents) {
-        setDocuments(data.documents);
-      }
-    } catch (err) {
-      console.error('Failed to load documents', err);
-    }
-  }
 
   async function doLogin(e) {
     e.preventDefault();
@@ -79,34 +60,6 @@ export default function CustodianFlow() {
     }
   }
 
-  async function downloadDocument(docId, docName, docMime) {
-    setDownloadingId(docId);
-    try {
-      const data = await api('POST', `/api/share/document/${docId}/decrypt`, null, session.token);
-      
-      const byteCharacters = atob(data.data);
-      const byteNumbers = new Array(byteCharacters.length);
-      for (let i = 0; i < byteCharacters.length; i++) {
-        byteNumbers[i] = byteCharacters.charCodeAt(i);
-      }
-      const byteArray = new Uint8Array(byteNumbers);
-      const blob = new Blob([byteArray], { type: data.mimeType || docMime });
-      
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = data.name || docName;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
-    } catch (err) {
-      alert('Download failed: ' + err.message);
-    } finally {
-      setDownloadingId(null);
-    }
-  }
-
   return (
     <div className="card">
       <h2>Custodian Sign-In</h2>
@@ -139,52 +92,30 @@ export default function CustodianFlow() {
 
       {step === 2 && !session?.result && (
         <form onSubmit={doShare}>
-          <p className="note">Authenticated as <b>{session.name}</b>. Enter your Security Key to decrypt and submit your SSS share.</p>
-          <label>Security Key</label>
+          <p className="note">Authenticated as <b>{session.name}</b>. Enter your share password to decrypt and submit your SSS share.</p>
+          <label>Share password</label>
           <input type="password" value={sharePassword} onChange={(e) => setSharePassword(e.target.value)} placeholder="Same as login password" autoFocus />
-          <button disabled={busy}>{busy ? 'Submitting...' : 'Submit Security Key'}</button>
+          <button disabled={busy}>{busy ? 'Submitting...' : 'Submit Share'}</button>
         </form>
       )}
 
       {session?.result?.keyReconstructed ? (
         <div className="celebrate">
-          <div className="celebrate-badge" style={{color: '#00ffcc', borderColor: '#00ffcc'}}>&#10003;</div>
-          <h2 className="celebrate-title" style={{color: '#00ffcc'}}>VAULT UNLOCKED</h2>
+          <div className="celebrate-badge">&#10003;</div>
+          <h2 className="celebrate-title">KEY RECONSTRUCTED</h2>
           <p className="note">
-            The Shamir Secret Sharing master key has been reconstructed. The encrypted document vault is now accessible.
+            <b>{session.result.count} of {session.result.total}</b> custodians successfully verified their
+            identity. The Shamir Secret Sharing master key has been reconstructed from their combined shares.
           </p>
-
-          <div className="doc-list" style={{ marginTop: '20px', textAlign: 'left' }}>
-            <h3 style={{ borderBottom: '1px solid #333', paddingBottom: '10px', color: '#fff' }}>Available Exam Papers</h3>
-            {documents.length === 0 ? (
-              <p style={{ color: '#aaa' }}>No files found in the vault.</p>
-            ) : (
-              <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                {documents.map((doc) => (
-                  <li key={doc._id} style={{
-                    background: '#111', padding: '15px', marginBottom: '10px', borderRadius: '8px',
-                    display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid #333'
-                  }}>
-                    <div>
-                      <strong style={{ color: '#00ffcc', display: 'block' }}>{doc.name}</strong>
-                      <span style={{ fontSize: '12px', color: '#888' }}>
-                        {(doc.size / 1024).toFixed(1)} KB &bull; {new Date(doc.uploadedAt).toLocaleString()}
-                      </span>
-                    </div>
-                    <button 
-                      onClick={() => downloadDocument(doc._id, doc.name, doc.mimeType)}
-                      disabled={downloadingId === doc._id}
-                      style={{ padding: '8px 15px', fontSize: '13px', background: '#222', border: '1px solid #444' }}
-                    >
-                      {downloadingId === doc._id ? 'Decrypting...' : 'Download'}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
+          <div className="keybox">
+            <h3>Reconstructed Master Key</h3>
+            <code>{session.result.masterKey}</code>
           </div>
-
-          <button style={{ marginTop: '30px' }} onClick={() => { setSession(null); setStep(0); setTotp(''); setSharePassword(''); setPassword(''); }}>Sign out & Re-lock</button>
+          <p className="success">
+            Document Vault on the Admin Dashboard is now <b>UNLOCKED</b> — the exam paper can be uploaded and
+            encrypted.
+          </p>
+          <button onClick={() => { setSession(null); setStep(0); setTotp(''); setSharePassword(''); setPassword(''); }}>Continue</button>
         </div>
       ) : session?.result ? (
         <div className="success">

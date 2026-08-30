@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import './App.css';
 import AuthModal from './AuthModal';
 import AdminDashboard from './pages/AdminDashboard';
-import TerminalProcess from './TerminalProcess';
 
 const TOTAL_FRAMES = 231;
 
@@ -206,7 +205,6 @@ function App() {
   }
 
   return (
-    <>
     <div className="scroll-container">
       {authOpen && authRoute !== '/admin' && <AuthModal onClose={() => setAuthOpen(false)} initialRoute={authRoute} />}
       
@@ -309,11 +307,6 @@ function App() {
             <div className="logo">
                <img src="/custom-logo.png" alt="Abhedyah Logo" className="nav-logo-img" />
             </div>
-            <div className="nav-actions">
-               <button className="auth-btn-top" onClick={() => { setAuthRoute('/custodian'); setAuthOpen(true); }} style={{ cursor: 'pointer' }}>
-                 CUSTODIAN LOGIN
-               </button>
-            </div>
           </nav>
 
           <div ref={heroContentRef} className="hero-content">
@@ -325,10 +318,6 @@ function App() {
         </div>
       </div>
     </div>
-    
-    <TerminalProcess />
-    
-    </>
   );
 }
 

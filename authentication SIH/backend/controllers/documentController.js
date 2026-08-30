@@ -3,15 +3,10 @@ const Document = require('../models/Document');
 const { encryptAesGcm, decryptAesGcm } = require('../utils/cryptoUtils');
 const { getActiveSession } = require('../utils/sessionStore');
 
-// Deterministic master key for admin uploads when vault is locked
-const ADMIN_FALLBACK_KEY = crypto.createHash('sha256').update('kavach-admin-fallback-key-2026').digest();
-
 function masterKeyBuffer() {
   const session = getActiveSession();
-  if (session && session.masterKeyReconstructed) {
-    return Buffer.from(session.masterKeyReconstructed, 'hex');
-  }
-  return ADMIN_FALLBACK_KEY;
+  if (!session.masterKeyReconstructed) return null;
+  return Buffer.from(session.masterKeyReconstructed, 'hex');
 }
 
 async function upload(req, res) {
@@ -21,6 +16,9 @@ async function upload(req, res) {
   }
 
   const masterKey = masterKeyBuffer();
+  if (!masterKey) {
+    return res.status(403).json({ error: 'Document vault locked: threshold not met' });
+  }
 
   const fileKey = crypto.randomBytes(32);
   const buffer = Buffer.from(data, 'base64');
@@ -38,7 +36,7 @@ async function upload(req, res) {
     encryptedFileKey: keyEnc.data,
     fileKeyIv: keyEnc.iv,
     fileKeyTag: keyEnc.tag,
-    uploadedBy: req.admin ? req.admin.email : 'system'
+    uploadedBy: req.admin && req.admin.email
   });
 
   return res.json({
@@ -55,7 +53,7 @@ async function list(req, res) {
   const docs = await Document.find()
     .sort({ uploadedAt: -1 })
     .select('name mimeType size uploadedAt uploadedBy');
-  return res.json({ documents: docs, locked: !(session && session.masterKeyReconstructed) });
+  return res.json({ documents: docs, locked: !session.masterKeyReconstructed });
 }
 
 async function decrypt(req, res) {
@@ -65,6 +63,9 @@ async function decrypt(req, res) {
   }
 
   const masterKey = masterKeyBuffer();
+  if (!masterKey) {
+    return res.status(403).json({ error: 'Document vault locked: threshold not met' });
+  }
 
   const fileKey = decryptAesGcm(doc.encryptedFileKey, doc.fileKeyIv, doc.fileKeyTag, masterKey);
   const plaintext = decryptAesGcm(doc.encryptedData, doc.iv, doc.tag, fileKey);
@@ -78,13 +79,4 @@ async function decrypt(req, res) {
   });
 }
 
-async function remove(req, res) {
-  const doc = await Document.findById(req.params.id);
-  if (!doc) {
-    return res.status(404).json({ error: 'Document not found' });
-  }
-  await Document.deleteOne({ _id: req.params.id });
-  return res.json({ success: true, message: 'Document deleted' });
-}
-
-module.exports = { upload, list, decrypt, remove };
+module.exports = { upload, list, decrypt };

@@ -14,6 +14,5 @@ router.post('/reconstruct', adminAuthMiddleware, shareController.reconstruct);
 router.post('/document/upload', adminAuthMiddleware, documentController.upload);
 router.get('/documents', adminAuthMiddleware, documentController.list);
 router.post('/document/:id/decrypt', adminAuthMiddleware, documentController.decrypt);
-router.delete('/document/:id', adminAuthMiddleware, documentController.remove);
 
 module.exports = router;
